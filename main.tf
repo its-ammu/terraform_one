@@ -22,6 +22,7 @@ resource "aws_instance" "web_server_one" {
     security_groups = [aws_security_group.sg.id]
     instance_type = "t2.micro"
     key_name = "arajkumar-presidio.pem"
+    user_data = "${file("startup.sh")}"
 
     tags = {
         Name = "web_server1_av"
