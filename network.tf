@@ -127,21 +127,21 @@ resource "aws_route_table_association" "priv_two" {
 /* ==================== SECURITY GROUP ==================== */
 
 resource "aws_security_group" "sg" {
-  name = "Web_server"
+  name        = "Web_server"
   description = "Security group for web server with ssh allowed"
-  vpc_id = aws_vpc.main.id
+  vpc_id      = aws_vpc.main.id
   ingress {
-      from_port = 22
-      to_port = 22
-      protocol = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
   ingress {
-      from_port = 80
-      to_port = 80
-      protocol = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
-      ipv6_cidr_blocks = ["::/0"]
+    from_port        = 80
+    to_port          = 80
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
   }
   egress {
     from_port        = 0
