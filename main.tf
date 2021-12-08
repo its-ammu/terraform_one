@@ -35,6 +35,7 @@ resource "aws_instance" "web_server" {
 /* ==================== RDS INSTANCE ==================== */
 
 resource "aws_db_instance" "db" {
+  identifier = "terraformdb-av"
   allocated_storage    = 10
   engine               = "mysql"
   engine_version       = "5.7"
