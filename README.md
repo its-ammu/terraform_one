@@ -5,9 +5,9 @@
 - [x] Create IG
 - [x] Create 2 instances 
 - [x] Add userdata
-- [ ] Create ALB with instances
-- [ ] Create RDS instance
-- [ ] Check connectivity
+- [x] Create ALB with instances
+- [x] Create RDS instance
+- [x] Check connectivity
 
 ## Layout
 - The `network.tf` file consistes of the network resources like VPC, Subnets, Route tables, IG
