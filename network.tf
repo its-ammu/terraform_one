@@ -13,52 +13,30 @@ resource "aws_vpc" "main" {
 
 /* ==================== PUBLIC SUBNETS ==================== */
 
-resource "aws_subnet" "pubsub_one" {
+resource "aws_subnet" "pubsub" {
   vpc_id                  = aws_vpc.main.id
-  cidr_block              = "27.0.1.0/24"
-  availability_zone       = "us-east1b"
+  for_each = var.pubsub_details
+  cidr_block              = each.value.cidr_block
+  availability_zone       = each.value.az
   map_public_ip_on_launch = true
 
   tags = {
-    Name  = "pubsub_one_av"
-    Owner = "arajkumar@presidio.com"
-  }
-}
-
-resource "aws_subnet" "pubsub_two" {
-  vpc_id                  = aws_vpc.main.id
-  cidr_block              = "27.0.2.0/24"
-  availability_zone       = "us-east1c"
-  map_public_ip_on_launch = true
-
-  tags = {
-    Name  = "pubsub_two_av"
+    Name  = "${each.value.name}"
     Owner = "arajkumar@presidio.com"
   }
 }
 
 /* ==================== PRIVATE SUBNETS ==================== */
 
-resource "aws_subnet" "privsub_one" {
+resource "aws_subnet" "privsub" {
   vpc_id                  = aws_vpc.main.id
-  cidr_block              = "27.0.3.0/24"
-  availability_zone       = "us-east1a"
+  for_each = var.privsub_details
+  cidr_block              = each.value.cidr_block
+  availability_zone       = each.value.az
   map_public_ip_on_launch = false
 
   tags = {
-    Name  = "privsub_one_av"
-    Owner = "arajkumar@presidio.com"
-  }
-}
-
-resource "aws_subnet" "privsub_two" {
-  vpc_id                  = aws_vpc.main.id
-  cidr_block              = "27.0.4.0/24"
-  availability_zone       = "us-east1d"
-  map_public_ip_on_launch = false
-
-  tags = {
-    Name  = "privsub_two_av"
+    Name  = "${each.value.name}"
     Owner = "arajkumar@presidio.com"
   }
 }
@@ -89,7 +67,7 @@ resource "aws_route_table" "privrt" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name  = "pubrt_av"
+    Name  = "privrt_av"
     Owner = "arajkumar@presidio.com"
   }
 }
@@ -103,28 +81,21 @@ resource "aws_route" "pubrt_ig" {
 
 /* ==================== ROUTE TABLES ASSOCIATION ==================== */
 
-resource "aws_route_table_association" "pub_one" {
-  subnet_id      = aws_subnet.pubsub_one.id
-  route_table_id = aws_route_table.pubrt.id
-}
-
-resource "aws_route_table_association" "pub_two" {
-  subnet_id      = aws_subnet.pubsub_two.id
+resource "aws_route_table_association" "pub" {
+  for_each = aws_subnet.pubsub
+  subnet_id      = each.value.id
   route_table_id = aws_route_table.pubrt.id
 }
 
 resource "aws_route_table_association" "priv_one" {
-  subnet_id      = aws_subnet.privsub_one.id
-  route_table_id = aws_route_table.privrt.id
-}
-
-resource "aws_route_table_association" "priv_two" {
-  subnet_id      = aws_subnet.privsub_two.id
+  for_each = aws_subnet.privsub
+  subnet_id      = each.value.id
   route_table_id = aws_route_table.privrt.id
 }
 
 
-/* ==================== SECURITY GROUP ==================== */
+
+/* ==================== SECURITY GROUPS ==================== */
 
 resource "aws_security_group" "sg" {
   name        = "Web_server"
@@ -149,5 +120,39 @@ resource "aws_security_group" "sg" {
     protocol         = "-1"
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
+  }
+}
+
+resource "aws_security_group" "rds_sg" {
+  name = "rds_sg"
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    from_port   = 3306
+    to_port     = 3306
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+      Name = "rds_sg"
+      Owner = "arajkumar@presidio.com"
+  }
+}
+
+/* ==================== DB SUBNET GROUP ==================== */
+
+resource "aws_db_subnet_group" "db_subgrp" {
+  name       = "db_subgrp_av"
+  subnet_ids = [for k, v in aws_subnet.privsub : v.id]
+
+  tags = {
+    Name = "DB private subgrp"
+    Owner = "arajkumar@presidio.com"
   }
 }
