@@ -124,8 +124,8 @@ resource "aws_security_group" "sg" {
 }
 
 resource "aws_security_group" "rds_sg" {
-  name = "rds_sg"
-  vpc_id      = aws_vpc.main.id
+  name   = "rds_sg"
+  vpc_id = aws_vpc.main.id
   ingress {
     from_port   = 22
     to_port     = 22
